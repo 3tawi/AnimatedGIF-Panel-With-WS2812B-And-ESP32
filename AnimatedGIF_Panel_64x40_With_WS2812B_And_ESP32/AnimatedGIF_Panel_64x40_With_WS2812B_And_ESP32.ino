@@ -30,7 +30,7 @@ CRGB black = CRGB::Black;
     if( x >= MATRIX_WIDTH || x < 0 || y >= MATRIX_HEIGHT || y < 0) return -1;
     uint16_t i;
     uint8_t yi = y / LED_RES_Y;
-    y %= 8;   
+    y %= LED_RES_Y;   
     if( yi & 0x01) {
       if( x & 0x01) {
         uint8_t reverseY = (LED_RES_Y - 1) - y;
@@ -60,26 +60,26 @@ int x_offset, y_offset;
 // Draw a line of image directly on the LED Matrix
 void GIFDraw(GIFDRAW *pDraw)
 {
-    uint8_t *s, c;
-    CRGB *d, *usPalette, usTemp[320];
-    int x, y, iWidth;
+  int x, y, iWidth;
 
   iWidth = pDraw->iWidth;
-  if (iWidth > MATRIX_WIDTH)
-      iWidth = MATRIX_WIDTH;
+  x = pDraw->iX; // current line
+  y = pDraw->iY + pDraw->y; // current line
+  
+  if (iWidth > (MATRIX_WIDTH - x))
+      iWidth = (MATRIX_WIDTH - x);
 
-    usPalette = (CRGB *)pDraw->pPalette;
-    y = pDraw->iY + pDraw->y; // current line
-    x = pDraw->iX; // current line
-    if (y >= MATRIX_HEIGHT || x >= MATRIX_WIDTH || iWidth < 1)
+  if (y >= MATRIX_HEIGHT || x >= MATRIX_WIDTH || iWidth < 1)
        return; 
-    
-    s = pDraw->pPixels;
-    for (int i=x; i<iWidth; i++) {
-      c = s[(i-x)];
-      if (c != 0xFF)
-        leds[XY(i, y)] = usPalette[c];
-    }
+       
+  uint8_t *s, c;
+  CRGB *usPalette = (CRGB *)pDraw->pPalette;
+  s = pDraw->pPixels;
+  for (int i=0; i<iWidth; i++) {
+    c = s[i];
+    if (c != 0xFF)
+      leds[XY(i+x, y)] = usPalette[c];
+  }
 } /* GIFDraw() */
 
 
